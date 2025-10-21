@@ -21,11 +21,20 @@ InvokeAI now supports cloud-based image generation models alongside local diffus
 - **Features**: SynthID watermark, LLM prompt enhancement, safety filters
 - **Documentation**: https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview
 
-### OpenAI DALL-E 3 🚧 (Coming Soon)
-- **Model**: `dall-e-3`
-- **Pricing**: $0.04-$0.12 per image
-- **Sizes**: 1024×1024, 1792×1024, 1024×1792
-- **Features**: HD quality, vivid/natural styles
+### OpenAI DALL-E 3 ✅ (Implemented)
+- **Models**: `dall-e-3`, `dall-e-2` (both supported)
+- **Pricing**:
+  - DALL-E 3: $0.04-$0.12 per image (varies by size and quality)
+  - DALL-E 2: $0.016-$0.020 per image
+- **Sizes**:
+  - DALL-E 3: 1024×1024, 1792×1024, 1024×1792
+  - DALL-E 2: 256×256, 512×512, 1024×1024
+- **Features**:
+  - Quality control (standard/HD)
+  - Style selection (vivid/natural)
+  - Revised prompts (GPT-4 enhanced)
+  - Batch generation (DALL-E 2 only, up to 10 images)
+- **Documentation**: https://platform.openai.com/docs/guides/images
 
 ---
 
@@ -53,10 +62,12 @@ InvokeAI now supports cloud-based image generation models alongside local diffus
    ```
 5. Note your project ID and preferred region (e.g., `us-central1`)
 
-#### OpenAI (when available)
+#### OpenAI
 1. Visit https://platform.openai.com/api-keys
-2. Create a new secret key
-3. Copy the key (starts with `sk-...`)
+2. Click "Create new secret key"
+3. Copy the key (starts with `sk-proj-` or `sk-`)
+4. Ensure billing is set up and you have credits available
+5. Note: DALL-E 3 requires an active billing account
 
 ### 2. Configure Environment
 
@@ -79,8 +90,8 @@ GOOGLE_API_KEY=AIzaXXXXXXXXXXXXXXXXXXXXXXXX
 GOOGLE_CLOUD_PROJECT=your_project_id
 GOOGLE_CLOUD_REGION=us-central1
 
-# For OpenAI (when available)
-OPENAI_API_KEY=sk-XXXXXXXXXXXXXXXXXXXXXXXX
+# For OpenAI
+OPENAI_API_KEY=sk-proj-XXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 ⚠️ **Important**: Never commit `.env` to git! It's already in `.gitignore`.
@@ -133,6 +144,27 @@ You should see:
 ✓ Vertex AI API is accessible
 ✓ Successfully generated image
 ✓ Saved test image to: outputs/test_imagen_output.png
+
+✓ ALL TESTS PASSED!
+```
+
+#### Test OpenAI
+```bash
+python scripts/test_openai_integration.py
+```
+
+You should see:
+```
+✓ Loaded .env file
+✓ Found API key: sk-proj-XXXXXXXXXXXX...
+✓ Successfully imported OpenAI provider
+✓ Created OpenAI provider instance
+✓ OpenAI API key is valid
+✓ Successfully generated image
+✓ Saved test image to: outputs/test_dalle3_output.png
+
+📝 DALL-E 3 Revised Prompt:
+   [GPT-4 enhanced version of your prompt]
 
 ✓ ALL TESTS PASSED!
 ```
@@ -234,22 +266,27 @@ Supports 5 aspect ratios (up to 2K resolution):
 
 ### Deterministic Generation
 
-Use the `seed` parameter for reproducible results:
+Use the `seed` parameter for reproducible results (Gemini & Imagen only):
 
 ```python
-# Same prompt + seed = same image
+# Same prompt + seed = same image (Gemini/Imagen)
 gemini_node.prompt = "A red apple on a table"
 gemini_node.seed = 12345
 ```
 
+**Note**: DALL-E 3 does not support seed parameters. Each generation is unique.
+
 ### Best Practices
 
-**Prompting (Gemini & Imagen)**:
-- Be descriptive and specific
-- Include style, mood, lighting, composition
-- Gemini: Natural language works well
-- Imagen: Enable prompt enhancement for better quality
-- Example: "A serene Japanese garden at sunset, cherry blossoms, soft lighting, watercolor painting style"
+**Prompting Tips**:
+- **All models**: Be descriptive and specific
+- **All models**: Include style, mood, lighting, composition
+- **Gemini**: Natural language works well
+- **Imagen**: Enable prompt enhancement for better quality
+- **DALL-E 3**: GPT-4 may revise your prompt (see revised_prompt in metadata)
+  - Revisions are for safety and quality improvements
+  - You can see the revised prompt in the image metadata
+- **Example**: "A serene Japanese garden at sunset, cherry blossoms, soft lighting, watercolor painting style"
 
 **Imagen-Specific Features**:
 - **Batch Generation**: Generate 2-4 variations at once
@@ -266,13 +303,27 @@ gemini_node.seed = 12345
   - Non-visible but detectable
   - Recommended to keep enabled for provenance tracking
 
-**Cost Optimization**:
-- Gemini: $0.039 per image (very affordable!)
-- Imagen: $0.06 per image (premium quality)
-- Use Gemini for drafts/iterations
-- Use Imagen for final high-quality outputs
-- Batch generation with Imagen is cost-effective (4 images = $0.24 vs 4 separate calls)
-- Generate multiple variations with different seeds
+**DALL-E-Specific Features**:
+- **Quality Setting**: Choose between `standard` (faster, cheaper) or `hd` (more detail, higher cost)
+- **Style Setting**: Choose between `vivid` (hyper-real, dramatic) or `natural` (subtle, realistic)
+- **Revised Prompts**: DALL-E 3 automatically enhances prompts with GPT-4
+  - Original: "a cat"
+  - Revised: "A fluffy orange tabby cat with green eyes, sitting on a windowsill..."
+- **DALL-E 2 Batch**: Generate up to 10 variations at once
+  ```python
+  dalle2_node.num_images = 10  # Only works with DALL-E 2
+  ```
+
+**Cost Optimization Strategy**:
+1. **Fast Iteration** ($0.020-$0.039):
+   - Use DALL-E 2 for quick ideas ($0.020)
+   - Use Gemini for fast iteration ($0.039)
+2. **Standard Quality** ($0.040-$0.060):
+   - Use DALL-E 3 Standard for good quality ($0.040)
+   - Use Imagen for premium + batch ($0.060, 4 images = $0.24)
+3. **Maximum Quality** ($0.080-$0.120):
+   - Use DALL-E 3 HD for extra detail
+   - Use large sizes (1792×1024) for landscapes/portraits
 
 **Error Handling**:
 - Cloud calls can fail (network, quota, etc.)
@@ -365,6 +416,54 @@ ValueError: GOOGLE_CLOUD_PROJECT environment variable is required for Imagen.
 3. Check quotas: https://console.cloud.google.com/iam-admin/quotas
 4. Request quota increase if needed
 
+### "OPENAI_API_KEY not found" Error
+
+```
+ValueError: API key not found for openai.
+Please set OPENAI_API_KEY in .env file or environment variables.
+```
+
+**Solution**:
+1. Verify `.env` file exists in InvokeAI root
+2. Check `OPENAI_API_KEY` is set correctly (should start with `sk-proj-` or `sk-`)
+3. Restart InvokeAI after adding/changing keys
+4. Test with: `python scripts/test_openai_integration.py`
+
+### "OpenAI API error (HTTP 401): Invalid API key" (OpenAI)
+
+**Solution**:
+1. Verify API key is correct and active
+2. Check key hasn't been revoked in https://platform.openai.com/api-keys
+3. Ensure the key has proper permissions
+4. Try creating a new API key
+
+### "OpenAI API error (HTTP 429): Rate limit exceeded" (OpenAI)
+
+**Solution**:
+1. You're making too many requests
+2. Wait a few minutes before retrying
+3. Check your rate limits: https://platform.openai.com/account/limits
+4. Consider upgrading to higher tier
+
+### "OpenAI API error (HTTP 402): Insufficient quota" (OpenAI)
+
+**Solution**:
+1. Your OpenAI account has no credits/billing
+2. Add payment method: https://platform.openai.com/account/billing
+3. Purchase credits or set up automatic billing
+4. Wait for billing to be processed (can take a few minutes)
+5. Note: DALL-E 3 requires active billing account
+
+### "OpenAI API error (HTTP 400): Invalid size/quality/style" (OpenAI)
+
+**Solution**:
+1. Check size is valid for the model:
+   - DALL-E 3: 1024×1024, 1792×1024, 1024×1792
+   - DALL-E 2: 256×256, 512×512, 1024×1024
+2. Verify quality is `standard` or `hd` (DALL-E 3 only)
+3. Verify style is `vivid` or `natural` (DALL-E 3 only)
+4. Check num_images is 1 for DALL-E 3 (batch not supported)
+
 ---
 
 ## API Reference
@@ -397,10 +496,13 @@ class CloudGenerationResponse(BaseModel):
 
 | Provider | Model | Price per Image | Notes |
 |----------|-------|-----------------|-------|
-| **Google** | Gemini 2.5 Flash | $0.039 | Best value! |
-| **Google** | Imagen 4 Ultra | $0.060 | Highest quality |
-| **OpenAI** | DALL-E 3 Standard | $0.040 | Good quality |
-| **OpenAI** | DALL-E 3 HD | $0.080-$0.120 | Premium quality |
+| **Google** | Gemini 2.5 Flash | $0.039 | Best value! ⭐ |
+| **OpenAI** | DALL-E 3 Standard 1024² | $0.040 | Great quality |
+| **OpenAI** | DALL-E 2 1024² | $0.020 | Good for iterations |
+| **Google** | Imagen 4 Ultra | $0.060 | Premium, batch capable |
+| **OpenAI** | DALL-E 3 Standard 1792×1024 | $0.080 | Landscape/Portrait |
+| **OpenAI** | DALL-E 3 HD 1024² | $0.080 | Extra detail |
+| **OpenAI** | DALL-E 3 HD 1792×1024 | $0.120 | Maximum quality |
 
 For comparison, running local models costs:
 - **GPU electricity**: ~$0.01-0.05 per image (varies by hardware)
@@ -450,11 +552,15 @@ For comparison, running local models costs:
 - [x] Integration test script
 - [x] Documentation
 
-### Phase 3: OpenAI Integration 📋 (Planned)
-- [ ] DALL-E 3 provider
-- [ ] Quality/style selection (HD, vivid, natural)
-- [ ] Revised prompt handling
-- [ ] GPT Image 1 (when access granted)
+### Phase 3: OpenAI Integration ✅ (Completed)
+- [x] OpenAI provider implementation (100% API-accurate)
+- [x] DALL-E 3 support (quality/style/revised prompts)
+- [x] DALL-E 2 support (batch generation up to 10 images)
+- [x] Quality/style selection (standard/HD, vivid/natural)
+- [x] Revised prompt handling and metadata capture
+- [x] Text-to-image invocation nodes (separate for DALL-E 3 and DALL-E 2)
+- [x] Integration test script
+- [x] Documentation
 
 ### Phase 4: Frontend Integration 📋 (Planned)
 - [ ] Cloud model registration UI
