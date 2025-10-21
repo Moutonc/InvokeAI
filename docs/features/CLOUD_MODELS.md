@@ -12,11 +12,14 @@ InvokeAI now supports cloud-based image generation models alongside local diffus
 - **Features**: Deterministic generation with seed, natural language prompts
 - **Documentation**: https://ai.google.dev/gemini-api/docs/image-generation
 
-### Google Imagen 4 Ultra 🚧 (Coming Soon)
+### Google Imagen 4 Ultra ✅ (Implemented)
 - **Model**: `imagen-4.0-ultra-generate-001`
 - **Pricing**: $0.06 per image
 - **Max Resolution**: 2048×2048 (2K)
-- **Features**: SynthID watermark, prompt enhancement, safety filters
+- **Aspect Ratios**: 1:1, 3:4, 4:3, 9:16, 16:9
+- **Batch Generation**: 1-4 images per request
+- **Features**: SynthID watermark, LLM prompt enhancement, safety filters
+- **Documentation**: https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview
 
 ### OpenAI DALL-E 3 🚧 (Coming Soon)
 - **Model**: `dall-e-3`
@@ -35,6 +38,20 @@ InvokeAI now supports cloud-based image generation models alongside local diffus
 2. Click "Get API key in Google AI Studio"
 3. Create a new API key
 4. Copy the key (starts with `AIza...`)
+
+#### Google Imagen (Vertex AI)
+1. Create a Google Cloud project: https://console.cloud.google.com/
+2. Enable Vertex AI API: https://console.cloud.google.com/apis/library/aiplatform.googleapis.com
+3. Enable billing for your project
+4. Authenticate:
+   ```bash
+   # For local development
+   gcloud auth application-default login
+
+   # For production (service account)
+   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json
+   ```
+5. Note your project ID and preferred region (e.g., `us-central1`)
 
 #### OpenAI (when available)
 1. Visit https://platform.openai.com/api-keys
@@ -58,6 +75,10 @@ Add your keys:
 # For Google Gemini
 GOOGLE_API_KEY=AIzaXXXXXXXXXXXXXXXXXXXXXXXX
 
+# For Google Imagen (Vertex AI)
+GOOGLE_CLOUD_PROJECT=your_project_id
+GOOGLE_CLOUD_REGION=us-central1
+
 # For OpenAI (when available)
 OPENAI_API_KEY=sk-XXXXXXXXXXXXXXXXXXXXXXXX
 ```
@@ -76,8 +97,9 @@ uv pip install httpx python-dotenv google-auth
 
 ### 4. Test Integration
 
-Run the test script to verify everything works:
+Run the test scripts to verify everything works:
 
+#### Test Gemini
 ```bash
 python scripts/test_gemini_integration.py
 ```
@@ -91,6 +113,26 @@ You should see:
 ✓ API credentials are valid
 ✓ Successfully generated image
 ✓ Saved test image to: outputs/test_gemini_output.png
+
+✓ ALL TESTS PASSED!
+```
+
+#### Test Imagen
+```bash
+python scripts/test_imagen_integration.py
+```
+
+You should see:
+```
+✓ Loaded .env file
+✓ Found Google Cloud project: your-project-id
+✓ Using region: us-central1
+✓ Successfully imported Imagen provider
+✓ Created Imagen provider instance
+✓ Google Cloud credentials are valid
+✓ Vertex AI API is accessible
+✓ Successfully generated image
+✓ Saved test image to: outputs/test_imagen_output.png
 
 ✓ ALL TESTS PASSED!
 ```
@@ -163,7 +205,8 @@ Once registered, the cloud model will appear in the model selector. You can use 
 
 ### Aspect Ratios
 
-Gemini 2.5 Flash supports 10 aspect ratios with optimal dimensions:
+#### Gemini 2.5 Flash
+Supports 10 aspect ratios with optimal dimensions:
 
 | Aspect Ratio | Dimensions | Use Case |
 |--------------|------------|----------|
@@ -178,6 +221,17 @@ Gemini 2.5 Flash supports 10 aspect ratios with optimal dimensions:
 | 16:9 | 1024×576 | Widescreen / Cinematic |
 | 21:9 | 1344×576 | Ultra-wide / Panoramic |
 
+#### Imagen 4 Ultra
+Supports 5 aspect ratios (up to 2K resolution):
+
+| Aspect Ratio | Dimensions | Use Case |
+|--------------|------------|----------|
+| 1:1 | 1024×1024 | Square / Social media |
+| 3:4 | 768×1024 | Portrait |
+| 4:3 | 1024×768 | Landscape |
+| 9:16 | 576×1024 | Mobile / Stories |
+| 16:9 | 1024×576 | Widescreen |
+
 ### Deterministic Generation
 
 Use the `seed` parameter for reproducible results:
@@ -190,21 +244,41 @@ gemini_node.seed = 12345
 
 ### Best Practices
 
-**Prompting**:
+**Prompting (Gemini & Imagen)**:
 - Be descriptive and specific
-- Gemini understands natural language well
 - Include style, mood, lighting, composition
+- Gemini: Natural language works well
+- Imagen: Enable prompt enhancement for better quality
 - Example: "A serene Japanese garden at sunset, cherry blossoms, soft lighting, watercolor painting style"
+
+**Imagen-Specific Features**:
+- **Batch Generation**: Generate 2-4 variations at once
+  ```python
+  imagen_node.num_images = 4  # Generate 4 variations
+  ```
+- **Safety Filters**: Choose appropriate level for your use case
+  - `block_low_and_above`: Most strict
+  - `block_medium_and_above`: Balanced (default)
+  - `block_only_high`: Least strict
+- **Prompt Enhancement**: LLM improves your prompts automatically
+  - Enabled by default - disable only if you need exact control
+- **SynthID Watermark**: Embedded authenticity marker
+  - Non-visible but detectable
+  - Recommended to keep enabled for provenance tracking
 
 **Cost Optimization**:
 - Gemini: $0.039 per image (very affordable!)
+- Imagen: $0.06 per image (premium quality)
+- Use Gemini for drafts/iterations
+- Use Imagen for final high-quality outputs
+- Batch generation with Imagen is cost-effective (4 images = $0.24 vs 4 separate calls)
 - Generate multiple variations with different seeds
-- Use lower resolutions for drafts (coming: resolution control)
 
 **Error Handling**:
 - Cloud calls can fail (network, quota, etc.)
 - Set appropriate timeouts in workflows
 - Cache successful results locally
+- Implement retry logic for transient failures
 
 ---
 
@@ -253,6 +327,43 @@ Please set GOOGLE_API_KEY in .env file or environment variables.
 2. Verify image was generated (check workflow status)
 3. Refresh gallery
 4. Check file permissions on `outputs/` directory
+
+### "GOOGLE_CLOUD_PROJECT not found" Error (Imagen)
+
+```
+ValueError: GOOGLE_CLOUD_PROJECT environment variable is required for Imagen.
+```
+
+**Solution**:
+1. Set `GOOGLE_CLOUD_PROJECT=your-project-id` in `.env`
+2. Get your project ID from: https://console.cloud.google.com/
+3. Restart InvokeAI after adding the variable
+
+### "Failed to initialize Google Cloud credentials" (Imagen)
+
+**Solution**:
+1. Authenticate with: `gcloud auth application-default login`
+2. Or set service account key: `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/key.json`
+3. Verify gcloud is installed: https://cloud.google.com/sdk/docs/install
+4. Test with: `python scripts/test_imagen_integration.py`
+
+### "Imagen API permission denied (HTTP 403)" (Imagen)
+
+**Solution**:
+1. Enable Vertex AI API: https://console.cloud.google.com/apis/library/aiplatform.googleapis.com
+2. Verify your Google Cloud account has required permissions:
+   - Vertex AI User role
+   - Service Account Token Creator (if using service account)
+3. Ensure billing is enabled for your project
+4. Wait a few minutes after enabling API for changes to propagate
+
+### "Imagen API rate limit exceeded (HTTP 429)" (Imagen)
+
+**Solution**:
+1. You've hit your Vertex AI quota
+2. Wait before retrying
+3. Check quotas: https://console.cloud.google.com/iam-admin/quotas
+4. Request quota increase if needed
 
 ---
 
@@ -328,12 +439,16 @@ For comparison, running local models costs:
 - [x] Text-to-image invocation
 - [x] Documentation
 
-### Phase 2: Google Imagen 4 Ultra 🚧 (In Progress)
-- [ ] Vertex AI authentication
-- [ ] Provider implementation
-- [ ] Support for batch generation (1-4 images)
-- [ ] Safety filter configuration
-- [ ] Prompt enhancement toggle
+### Phase 2: Google Imagen 4 Ultra ✅ (Completed)
+- [x] Vertex AI authentication (OAuth2 + ADC)
+- [x] Provider implementation (100% API-accurate)
+- [x] Support for batch generation (1-4 images)
+- [x] Safety filter configuration (3 levels)
+- [x] Prompt enhancement toggle (LLM-based)
+- [x] SynthID watermark support
+- [x] Text-to-image invocation node
+- [x] Integration test script
+- [x] Documentation
 
 ### Phase 3: OpenAI Integration 📋 (Planned)
 - [ ] DALL-E 3 provider

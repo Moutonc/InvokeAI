@@ -1,6 +1,7 @@
 """Cloud model provider services for cloud-based image generation APIs."""
 
 from .google_gemini_provider import GoogleGeminiProvider
+from .google_imagen_provider import GoogleImagenProvider
 from .provider_base import CloudGenerationRequest, CloudGenerationResponse, CloudModelProviderBase
 
 __all__ = [
@@ -8,4 +9,5 @@ __all__ = [
     "CloudGenerationRequest",
     "CloudGenerationResponse",
     "GoogleGeminiProvider",
+    "GoogleImagenProvider",
 ]
