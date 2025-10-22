@@ -1415,7 +1415,20 @@
         "intermediatesCleared_one": "Cleared {{count}} Intermediate",
         "intermediatesCleared_other": "Cleared {{count}} Intermediates",
         "intermediatesClearedFailed": "Problem Clearing Intermediates",
-        "reloadingIn": "Reloading in"
+        "reloadingIn": "Reloading in",
+        "cloudProviders": "Cloud Providers",
+        "autoCheckProvidersOnStartup": "Check Provider Status on Startup",
+        "showCostEstimates": "Show Cost Estimates",
+        "refreshProviderStatus": "Refresh Provider Status",
+        "providerStatus": "Provider Status",
+        "setupInstructions": "Setup Instructions",
+        "cloudProvidersHelpText": "Configure API keys for cloud image generation providers (Google Gemini, Google Imagen, OpenAI DALL-E). API keys should be set in your .env file for security.",
+        "cloudProvidersConfigNote": "Note: API keys are not shown in the UI for security. Check provider status to verify configuration."
+    },
+    "cloudIntegration": {
+        "estimatedCost": "Estimated Cost",
+        "estimatedCostTooltip": "Approximate cost for this generation based on provider pricing",
+        "errorEstimatingCost": "Error estimating cost"
     },
     "toast": {
         "addedToBoard": "Added to board {{name}}'s assets",
