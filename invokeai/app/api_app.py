@@ -20,6 +20,7 @@ from invokeai.app.api.routers import (
     board_images,
     boards,
     client_state,
+    cloud_models,
     download_queue,
     images,
     model_manager,
@@ -123,6 +124,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Include all routers
 app.include_router(utilities.utilities_router, prefix="/api")
 app.include_router(model_manager.model_manager_router, prefix="/api")
+app.include_router(cloud_models.cloud_models_router, prefix="/api")
 app.include_router(download_queue.download_queue_router, prefix="/api")
 app.include_router(images.images_router, prefix="/api")
 app.include_router(boards.boards_router, prefix="/api")

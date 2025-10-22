@@ -16,6 +16,7 @@ import {
 } from '@invoke-ai/ui-library';
 import { clearStorage } from 'app/store/enhancers/reduxRemember/driver';
 import { useAppDispatch, useAppSelector } from 'app/store/storeHooks';
+import { CloudProviderSettingsPanel } from 'features/cloudIntegration/components';
 import { InformationalPopover } from 'common/components/InformationalPopover/InformationalPopover';
 import ScrollableContent from 'common/components/OverlayScrollbars/ScrollableContent';
 import { buildUseBoolean } from 'common/hooks/useBoolean';
@@ -255,6 +256,8 @@ const SettingsModal = (props: { children: ReactElement }) => {
                     <SettingsDeveloperLogLevel />
                     <SettingsDeveloperLogNamespaces />
                   </StickyScrollable>
+
+                  <CloudProviderSettingsPanel />
 
                   <StickyScrollable title={t('settings.clearIntermediates')}>
                     <Button
