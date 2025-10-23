@@ -16,10 +16,10 @@ import {
 } from '@invoke-ai/ui-library';
 import { clearStorage } from 'app/store/enhancers/reduxRemember/driver';
 import { useAppDispatch, useAppSelector } from 'app/store/storeHooks';
-import { CloudProviderSettingsPanel } from 'features/cloudIntegration/components';
 import { InformationalPopover } from 'common/components/InformationalPopover/InformationalPopover';
 import ScrollableContent from 'common/components/OverlayScrollbars/ScrollableContent';
 import { buildUseBoolean } from 'common/hooks/useBoolean';
+import { CloudProviderSettingsPanel } from 'features/cloudIntegration/components';
 import { selectShouldUseCPUNoise, shouldUseCpuNoiseChanged } from 'features/controlLayers/store/paramsSlice';
 import { useRefreshAfterResetModal } from 'features/system/components/SettingsModal/RefreshAfterResetModal';
 import { SettingsDeveloperLogIsEnabled } from 'features/system/components/SettingsModal/SettingsDeveloperLogIsEnabled';

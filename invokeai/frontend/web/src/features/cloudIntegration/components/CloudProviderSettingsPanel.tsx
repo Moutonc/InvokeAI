@@ -3,6 +3,9 @@
  * Settings panel for managing cloud provider configurations
  */
 
+import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import {
   Box,
   Button,
@@ -21,13 +24,16 @@ import {
   showCostEstimatesChanged,
 } from 'features/cloudIntegration/store/cloudSlice';
 import { PROVIDER_DISPLAY_INFO } from 'features/cloudIntegration/types';
+import { useStandaloneAccordionToggle } from 'features/settingsAccordions/hooks/useStandaloneAccordionToggle';
 import { useListCloudProvidersQuery } from 'services/api/endpoints/cloudModels';
-import { memo, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 
 export const CloudProviderSettingsPanel = memo(() => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { isOpen, onToggle } = useStandaloneAccordionToggle({
+    id: 'cloudProviders',
+    defaultIsOpen: false,
+  });
 
   // Get state from Redux
   const autoCheckOnStartup = useAppSelector((s) => s.cloud.autoCheckOnStartup);
@@ -56,7 +62,7 @@ export const CloudProviderSettingsPanel = memo(() => {
   }, [refetch]);
 
   return (
-    <StandaloneAccordion label={t('settings.cloudProviders')} defaultIsOpen={false}>
+    <StandaloneAccordion label={t('settings.cloudProviders')} isOpen={isOpen} onToggle={onToggle}>
       <Flex gap={4} flexDir="column">
         {/* Global Settings */}
         <Box>

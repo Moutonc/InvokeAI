@@ -2,9 +2,9 @@
  * Redux slice for cloud integration state management.
  */
 
-import type { PayloadAction, SliceConfig } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-import type { PersistConfig } from 'app/store/store';
+import type { PersistConfig, SliceConfig } from 'app/store/types';
 import type { CloudProviderInfo, CloudProviderType } from 'features/cloudIntegration/types';
 import { z } from 'zod';
 
@@ -22,22 +22,22 @@ const zCloudState = z.object({
 export type CloudState = z.infer<typeof zCloudState>;
 
 /**
- * Initial state for cloud integration
+ * Get initial state for cloud integration
  */
-const initialState: CloudState = {
+const getInitialState = (): CloudState => ({
   providers: {},
   lastChecked: null,
   autoCheckOnStartup: true,
   showCostEstimates: true,
   selectedProvider: null,
-};
+});
 
 /**
  * Cloud integration slice
  */
-export const cloudSlice = createSlice({
+const slice = createSlice({
   name: 'cloud',
-  initialState,
+  initialState: getInitialState(),
   reducers: {
     /**
      * Update provider status
@@ -88,7 +88,7 @@ export const cloudSlice = createSlice({
     /**
      * Reset to initial state
      */
-    cloudReset: () => initialState,
+    cloudReset: () => getInitialState(),
   },
 });
 
@@ -100,24 +100,19 @@ export const {
   showCostEstimatesChanged,
   selectedProviderChanged,
   cloudReset,
-} = cloudSlice.actions;
-
-/**
- * Persistence configuration
- */
-const persistConfig: PersistConfig<CloudState> = {
-  name: cloudSlice.name,
-  initialState,
-  migrate: (state) => {
-    return zCloudState.parse(state);
-  },
-  persistDenylist: ['lastChecked'], // Don't persist last checked time
-};
+} = slice.actions;
 
 /**
  * Slice configuration for app store
  */
-export const cloudSliceConfig: SliceConfig<CloudState> = {
-  slice: cloudSlice,
-  persistConfig,
+export const cloudSliceConfig: SliceConfig<typeof slice> = {
+  slice,
+  schema: zCloudState,
+  getInitialState,
+  persistConfig: {
+    migrate: (state) => {
+      return zCloudState.parse(state);
+    },
+    persistDenylist: ['lastChecked'], // Don't persist last checked time
+  },
 };

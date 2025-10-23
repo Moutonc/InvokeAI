@@ -3,13 +3,14 @@
  * Shows estimated cost for cloud generation requests
  */
 
+import { memo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { Box, Flex, Spinner, Text, Tooltip } from '@invoke-ai/ui-library';
 import { useAppSelector } from 'app/store/storeHooks';
 import type { CloudProviderType } from 'features/cloudIntegration/types';
 import { PROVIDER_DISPLAY_INFO } from 'features/cloudIntegration/types';
 import { useEstimateCloudGenerationCostMutation } from 'services/api/endpoints/cloudModels';
-import { memo, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 
 interface CostEstimationDisplayProps {
   provider: CloudProviderType;
