@@ -142,18 +142,26 @@ class GoogleImagenProvider(CloudModelProviderBase):
 
         # Build request payload per official Vertex AI spec
         # Reference: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api
+
+        # API Constraint: Seed and watermark cannot be used together
+        # If seed is provided, we must disable watermark
+        use_watermark = self.add_watermark
+        if request.seed is not None:
+            use_watermark = False
+
         payload = {
             "instances": [{"prompt": request.prompt}],
             "parameters": {
                 "sampleCount": min(request.num_images, 4),  # Imagen supports 1-4 images
                 "aspectRatio": aspect_ratio,
                 "safetySetting": self.safety_setting,
-                "addWatermark": self.add_watermark,  # SynthID watermark
+                "addWatermark": use_watermark,  # SynthID watermark (disabled if seed is used)
                 "enhancePrompt": self.enhance_prompt,  # LLM-based prompt enhancement
             },
         }
 
         # Add seed if provided (for deterministic generation)
+        # Note: API constraint - seed cannot be used with watermark
         if request.seed is not None:
             payload["parameters"]["seed"] = request.seed
 
@@ -250,7 +258,7 @@ class GoogleImagenProvider(CloudModelProviderBase):
                     "seed": request.seed,
                     "prompt": request.prompt,
                     "safety_setting": self.safety_setting,
-                    "synthid_watermark": self.add_watermark,
+                    "synthid_watermark": use_watermark,  # Actual watermark status used
                     "prompt_enhanced": self.enhance_prompt,
                 },
                 provider_response=data,
