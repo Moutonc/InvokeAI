@@ -257,30 +257,19 @@ class GoogleImagenProvider(CloudModelProviderBase):
             )
 
     async def validate_credentials(self) -> bool:
-        """Validate Google Cloud credentials and Vertex AI access.
+        """Validate Google Cloud credentials.
 
         Returns:
-            True if credentials are valid and Vertex AI is accessible, False otherwise
+            True if credentials can be obtained and refreshed, False otherwise
         """
         try:
-            # Try to refresh/get token
+            # Try to refresh/get token if needed
             if not self.credentials.valid:
                 self.credentials.refresh(Request())
 
-            # Test API access by making a minimal request
-            # We'll try to list models to verify access
-            endpoint = (
-                f"https://{self.region}-aiplatform.googleapis.com/v1/"
-                f"projects/{self.project_id}/locations/{self.region}/publishers/google/models"
-            )
+            # Verify we have a valid token
+            # This confirms the credentials are properly set up
+            return self.credentials.valid and self.credentials.token is not None
 
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(
-                    endpoint,
-                    headers={
-                        "Authorization": f"Bearer {self.credentials.token}",
-                    },
-                )
-                return response.status_code == 200
         except Exception:
             return False
