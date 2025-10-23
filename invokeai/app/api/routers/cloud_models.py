@@ -25,7 +25,17 @@ from invokeai.backend.model_manager.configs.cloud_models import (
 from invokeai.backend.model_manager.taxonomy import CloudProviderType
 
 # Load .env file from project root
-load_dotenv()
+# Walk up the directory tree to find the project root with .env file
+current_dir = Path(__file__).resolve().parent
+while current_dir != current_dir.parent:
+    env_file = current_dir / ".env"
+    if env_file.exists():
+        load_dotenv(env_file)
+        break
+    current_dir = current_dir.parent
+else:
+    # Fallback: try loading from current working directory
+    load_dotenv()
 
 cloud_models_router = APIRouter(prefix="/v2/cloud", tags=["cloud_models"])
 
