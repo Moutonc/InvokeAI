@@ -20,7 +20,7 @@ export const cloudModelsApi = api.injectEndpoints({
      */
     listCloudProviders: build.query<CloudProviderInfo[], { checkCredentials?: boolean }>({
       query: ({ checkCredentials = false }) => ({
-        url: 'cloud/providers',
+        url: 'api/v2/cloud/providers',
         method: 'GET',
         params: { check_credentials: checkCredentials },
       }),
@@ -32,7 +32,7 @@ export const cloudModelsApi = api.injectEndpoints({
      */
     getCloudProviderStatus: build.query<CloudProviderInfo, CloudProviderType>({
       query: (provider) => ({
-        url: `cloud/providers/${provider}/status`,
+        url: `api/v2/cloud/providers/${provider}/status`,
         method: 'GET',
       }),
       providesTags: (result, error, provider) => [{ type: 'CloudProviders', id: provider }],
@@ -43,7 +43,7 @@ export const cloudModelsApi = api.injectEndpoints({
      */
     listCloudModels: build.query<CloudModelInfo[], { provider?: CloudProviderType; onlyConfigured?: boolean }>({
       query: ({ provider, onlyConfigured = false }) => ({
-        url: 'cloud/models',
+        url: 'api/v2/cloud/models',
         method: 'GET',
         params: {
           provider,
@@ -68,7 +68,7 @@ export const cloudModelsApi = api.injectEndpoints({
       }
     >({
       query: (params) => ({
-        url: 'cloud/estimate_cost',
+        url: 'api/v2/cloud/estimate_cost',
         method: 'POST',
         params,
       }),
