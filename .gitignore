@@ -192,3 +192,18 @@ installer/InvokeAI-Installer/
 .aider*
 
 .claude/
+google-cloud-sdk/
+google-cloud-sdk/
+
+# InvokeAI runtime directories
+configs/
+databases/
+models/
+nodes/
+outputs/
+invokeai.yaml
+invokeai.example.yaml
+
+# Google Cloud SDK
+google-cloud-sdk/
+google-cloud-cli-*.tar.gz

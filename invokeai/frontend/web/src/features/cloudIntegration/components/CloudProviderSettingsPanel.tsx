@@ -3,10 +3,6 @@
  * Settings panel for managing cloud provider configurations
  */
 
-import type { ChangeEvent } from 'react';
-import { memo, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-
 import {
   Box,
   Button,
@@ -23,6 +19,9 @@ import { ProviderStatusIndicator } from 'features/cloudIntegration/components/Pr
 import { autoCheckOnStartupChanged, showCostEstimatesChanged } from 'features/cloudIntegration/store/cloudSlice';
 import { PROVIDER_DISPLAY_INFO } from 'features/cloudIntegration/types';
 import { useStandaloneAccordionToggle } from 'features/settingsAccordions/hooks/useStandaloneAccordionToggle';
+import type { ChangeEvent } from 'react';
+import { memo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useListCloudProvidersQuery } from 'services/api/endpoints/cloudModels';
 
 export const CloudProviderSettingsPanel = memo(() => {
