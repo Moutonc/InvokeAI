@@ -86,6 +86,9 @@ class GoogleGeminiProvider(CloudModelProviderBase):
         """
         # Build request payload per official API spec
         # Reference: https://ai.google.dev/gemini-api/docs/image-generation#rest
+        # Note: API uses aspect ratio instead of explicit dimensions
+        aspect_ratio = self._calculate_aspect_ratio(request.width, request.height)
+
         payload = {
             "contents": [
                 {
@@ -98,8 +101,7 @@ class GoogleGeminiProvider(CloudModelProviderBase):
             ],
             "generationConfig": {
                 "responseModalities": ["image"],
-                "responseWidth": request.width,
-                "responseHeight": request.height,
+                "aspectRatio": aspect_ratio,
             },
         }
 
