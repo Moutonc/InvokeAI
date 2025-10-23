@@ -85,8 +85,8 @@ class GoogleGeminiProvider(CloudModelProviderBase):
             Exception: If API call fails with detailed error message
         """
         # Build request payload per official API spec
-        # Reference: https://ai.google.dev/gemini-api/docs/image-generation#rest
-        # Note: API uses aspect ratio instead of explicit dimensions
+        # Reference: https://ai.google.dev/gemini-api/docs/image-generation
+        # The API uses imageConfig with aspectRatio nested inside generationConfig
         aspect_ratio = self._calculate_aspect_ratio(request.width, request.height)
 
         payload = {
@@ -100,12 +100,13 @@ class GoogleGeminiProvider(CloudModelProviderBase):
                 }
             ],
             "generationConfig": {
-                "responseModalities": ["image"],
-                "aspectRatio": aspect_ratio,
+                "imageConfig": {
+                    "aspectRatio": aspect_ratio
+                }
             },
         }
 
-        # Add seed if provided (optional parameter)
+        # Add seed if provided (optional parameter at generationConfig level)
         if request.seed is not None:
             payload["generationConfig"]["seed"] = request.seed
 
