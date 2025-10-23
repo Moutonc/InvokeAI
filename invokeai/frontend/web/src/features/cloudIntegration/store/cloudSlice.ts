@@ -4,7 +4,7 @@
 
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-import type { PersistConfig, SliceConfig } from 'app/store/types';
+import type { SliceConfig } from 'app/store/types';
 import type { CloudProviderInfo, CloudProviderType } from 'features/cloudIntegration/types';
 import { z } from 'zod';
 

@@ -3,6 +3,7 @@
  * Settings panel for managing cloud provider configurations
  */
 
+import type { ChangeEvent } from 'react';
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,10 +20,7 @@ import {
 } from '@invoke-ai/ui-library';
 import { useAppDispatch, useAppSelector } from 'app/store/storeHooks';
 import { ProviderStatusIndicator } from 'features/cloudIntegration/components/ProviderStatusIndicator';
-import {
-  autoCheckOnStartupChanged,
-  showCostEstimatesChanged,
-} from 'features/cloudIntegration/store/cloudSlice';
+import { autoCheckOnStartupChanged, showCostEstimatesChanged } from 'features/cloudIntegration/store/cloudSlice';
 import { PROVIDER_DISPLAY_INFO } from 'features/cloudIntegration/types';
 import { useStandaloneAccordionToggle } from 'features/settingsAccordions/hooks/useStandaloneAccordionToggle';
 import { useListCloudProvidersQuery } from 'services/api/endpoints/cloudModels';
@@ -44,14 +42,14 @@ export const CloudProviderSettingsPanel = memo(() => {
 
   // Handlers
   const handleAutoCheckChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       dispatch(autoCheckOnStartupChanged(e.target.checked));
     },
     [dispatch]
   );
 
   const handleShowCostEstimatesChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       dispatch(showCostEstimatesChanged(e.target.checked));
     },
     [dispatch]
