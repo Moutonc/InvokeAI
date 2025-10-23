@@ -11,7 +11,7 @@ from invokeai.app.invocations.fields import ImageField, InputField, OutputField
 from invokeai.app.invocations.model import ModelIdentifierField
 from invokeai.app.invocations.primitives import ImageOutput
 from invokeai.app.services.cloud_providers.provider_base import CloudGenerationRequest
-from invokeai.app.services.images.images_common import ImageCategory
+from invokeai.app.services.image_records.image_records_common import ImageCategory
 
 
 @invocation(
