@@ -2,8 +2,10 @@
 
 import os
 from enum import Enum
+from pathlib import Path
 from typing import Dict, List, Optional
 
+from dotenv import load_dotenv
 from fastapi import Query
 from fastapi.routing import APIRouter
 from pydantic import BaseModel, Field
@@ -21,6 +23,9 @@ from invokeai.backend.model_manager.configs.cloud_models import (
     OpenAIImageConfig,
 )
 from invokeai.backend.model_manager.taxonomy import CloudProviderType
+
+# Load .env file from project root
+load_dotenv()
 
 cloud_models_router = APIRouter(prefix="/v2/cloud", tags=["cloud_models"])
 
