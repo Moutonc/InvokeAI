@@ -27,14 +27,22 @@ from invokeai.backend.model_manager.taxonomy import CloudProviderType
 # Load .env file from project root
 # Walk up the directory tree to find the project root with .env file
 current_dir = Path(__file__).resolve().parent
+print(f"[CLOUD DEBUG] Starting .env search from: {current_dir}")
 while current_dir != current_dir.parent:
     env_file = current_dir / ".env"
+    print(f"[CLOUD DEBUG] Checking for .env at: {env_file}")
     if env_file.exists():
+        print(f"[CLOUD DEBUG] Found .env file at: {env_file}")
         load_dotenv(env_file)
+        # Print what keys we found
+        print(f"[CLOUD DEBUG] GOOGLE_API_KEY set: {bool(os.getenv('GOOGLE_API_KEY'))}")
+        print(f"[CLOUD DEBUG] GOOGLE_CLOUD_PROJECT set: {bool(os.getenv('GOOGLE_CLOUD_PROJECT'))}")
+        print(f"[CLOUD DEBUG] OPENAI_API_KEY set: {bool(os.getenv('OPENAI_API_KEY'))}")
         break
     current_dir = current_dir.parent
 else:
     # Fallback: try loading from current working directory
+    print(f"[CLOUD DEBUG] No .env found in parent dirs, trying cwd")
     load_dotenv()
 
 cloud_models_router = APIRouter(prefix="/v2/cloud", tags=["cloud_models"])
