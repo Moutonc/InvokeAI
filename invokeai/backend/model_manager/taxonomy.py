@@ -160,6 +160,7 @@ class ModelSourceType(str, Enum):
     Path = "path"
     Url = "url"
     HFRepoID = "hf_repo_id"
+    CLOUD = "cloud"  # Cloud API models (not downloaded)
 
 
 class CloudProviderType(str, Enum):

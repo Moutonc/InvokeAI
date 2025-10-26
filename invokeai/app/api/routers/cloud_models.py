@@ -433,9 +433,19 @@ async def register_cloud_model(
 
     # Create appropriate config based on provider and model
     try:
+        from invokeai.backend.model_manager.taxonomy import ModelSourceType
+
+        # Cloud models don't exist on disk, so we provide dummy values for file-based fields
+        cloud_model_key = f"cloud/{provider}/{model_id}"
+
         if provider == CloudProviderType.GoogleGemini and model_id == "gemini-2.5-flash-image":
             config = GeminiFlashImageConfig(
-                key=f"cloud/{provider}/{model_id}",
+                key=cloud_model_key,
+                hash="cloud-model",  # Cloud models don't have file hashes
+                path=cloud_model_key,  # Use key as virtual path
+                file_size=0,  # Cloud models have no file size
+                source=f"https://ai.google.dev/gemini-api/docs/image-generation",
+                source_type=ModelSourceType.CLOUD,
                 name=name or "Gemini 2.5 Flash Image",
                 description=description or "Google's fast and affordable image generation model",
                 provider=provider,
@@ -443,7 +453,12 @@ async def register_cloud_model(
             )
         elif provider == CloudProviderType.GoogleImagen and model_id == "imagen-4.0-ultra-generate-001":
             config = ImagenUltraConfig(
-                key=f"cloud/{provider}/{model_id}",
+                key=cloud_model_key,
+                hash="cloud-model",
+                path=cloud_model_key,
+                file_size=0,
+                source=f"https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/imagen-api",
+                source_type=ModelSourceType.CLOUD,
                 name=name or "Imagen 4 Ultra",
                 description=description or "Google's premium image generation with SynthID watermark",
                 provider=provider,
@@ -451,7 +466,12 @@ async def register_cloud_model(
             )
         elif provider == CloudProviderType.OpenAI and model_id in ["dall-e-3", "dall-e-2"]:
             config = OpenAIImageConfig(
-                key=f"cloud/{provider}/{model_id}",
+                key=cloud_model_key,
+                hash="cloud-model",
+                path=cloud_model_key,
+                file_size=0,
+                source=f"https://platform.openai.com/docs/guides/image-generation",
+                source_type=ModelSourceType.CLOUD,
                 name=name or f"DALL-E {model_id.split('-')[-1].upper()}",
                 description=description or "OpenAI's image generation model",
                 provider=provider,
