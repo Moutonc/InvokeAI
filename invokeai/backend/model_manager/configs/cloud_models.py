@@ -62,6 +62,7 @@ class GeminiFlashImageConfig(CloudModelConfig):
 
     provider: Literal[CloudProviderType.GoogleGemini] = CloudProviderType.GoogleGemini
     cloud_model_id: Literal["gemini-2.5-flash-image"] = "gemini-2.5-flash-image"
+    variant: Literal["google-gemini"] = "google-gemini"
 
     # Supported aspect ratios per official spec
     supported_aspect_ratios: List[str] = Field(
@@ -105,6 +106,7 @@ class ImagenUltraConfig(CloudModelConfig):
 
     provider: Literal[CloudProviderType.GoogleImagen] = CloudProviderType.GoogleImagen
     cloud_model_id: Literal["imagen-4.0-ultra-generate-001"] = "imagen-4.0-ultra-generate-001"
+    variant: Literal["google-imagen"] = "google-imagen"
 
     # Supported aspect ratios (Imagen-specific)
     supported_aspect_ratios: List[str] = Field(
@@ -153,6 +155,7 @@ class OpenAIImageConfig(CloudModelConfig):
     """
 
     provider: Literal[CloudProviderType.OpenAI] = CloudProviderType.OpenAI
+    variant: Literal["openai"] = "openai"
 
     # Model ID can be dall-e-3, dall-e-2, or gpt-image-1 (when available)
     cloud_model_id: str = Field(
