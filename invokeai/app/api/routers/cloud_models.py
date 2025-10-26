@@ -499,7 +499,7 @@ async def register_cloud_model(
             pass
 
         # Add to model manager
-        model_manager.add_model(config.key, config)
+        model_manager.add_model(config)
 
         return {
             "key": config.key,
