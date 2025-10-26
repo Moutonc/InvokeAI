@@ -116,16 +116,23 @@ async def _check_provider_status(provider: CloudProviderType) -> tuple[ProviderS
     # Try to validate credentials
     try:
         if provider == CloudProviderType.GoogleGemini:
-            provider_instance = GoogleGeminiProvider(api_key=os.getenv("GOOGLE_API_KEY", ""))
+            provider_instance = GoogleGeminiProvider(
+                api_key=os.getenv("GOOGLE_API_KEY", ""),
+                config={}
+            )
             is_valid = await provider_instance.validate_credentials()
         elif provider == CloudProviderType.GoogleImagen:
+            # GoogleImagenProvider gets project_id/region from environment variables
             provider_instance = GoogleImagenProvider(
-                project_id=os.getenv("GOOGLE_CLOUD_PROJECT", ""),
-                region=os.getenv("GOOGLE_CLOUD_REGION", "us-central1"),
+                api_key="",  # Not used by Imagen (uses Google Cloud credentials)
+                config={}
             )
             is_valid = await provider_instance.validate_credentials()
         elif provider == CloudProviderType.OpenAI:
-            provider_instance = OpenAIProvider(api_key=os.getenv("OPENAI_API_KEY", ""))
+            provider_instance = OpenAIProvider(
+                api_key=os.getenv("OPENAI_API_KEY", ""),
+                config={}
+            )
             is_valid = await provider_instance.validate_credentials()
         else:
             return ProviderStatus.ERROR, f"Unknown provider: {provider}"
