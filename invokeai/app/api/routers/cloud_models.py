@@ -386,3 +386,113 @@ async def estimate_cloud_generation_cost(
         quality=quality,
         estimated_cost=round(estimated_cost, 4),
     )
+
+
+@cloud_models_router.post(
+    "/models/register",
+    operation_id="register_cloud_model",
+    responses={
+        201: {"description": "Cloud model registered successfully"},
+        400: {"description": "Invalid parameters"},
+        409: {"description": "Model already registered"},
+    },
+    status_code=201,
+)
+async def register_cloud_model(
+    provider: CloudProviderType,
+    model_id: str = Query(description="Cloud model ID (e.g., 'gemini-2.5-flash-image')"),
+    name: Optional[str] = Query(default=None, description="Display name for the model"),
+    description: Optional[str] = Query(default=None, description="Model description"),
+) -> dict:
+    """Register a cloud model with the model manager.
+
+    This endpoint creates a cloud model configuration and registers it with InvokeAI's
+    model manager, making it available for use in workflows.
+
+    Args:
+        provider: Cloud provider type
+        model_id: Model ID on the cloud service
+        name: Optional display name (defaults to model_id)
+        description: Optional description
+
+    Returns:
+        dict with model key and registration status
+    """
+    from invokeai.backend.model_manager.configs.cloud_models import (
+        GeminiFlashImageConfig,
+        ImagenUltraConfig,
+        OpenAIImageConfig,
+    )
+
+    # Check if provider is configured
+    if not _check_api_key_configured(provider):
+        raise HTTPException(
+            status_code=400,
+            detail=f"{provider} is not configured. Please set required API keys in .env file.",
+        )
+
+    # Create appropriate config based on provider and model
+    try:
+        if provider == CloudProviderType.GoogleGemini and model_id == "gemini-2.5-flash-image":
+            config = GeminiFlashImageConfig(
+                key=f"cloud/{provider}/{model_id}",
+                name=name or "Gemini 2.5 Flash Image",
+                description=description or "Google's fast and affordable image generation model",
+                provider=provider,
+                cloud_model_id=model_id,
+            )
+        elif provider == CloudProviderType.GoogleImagen and model_id == "imagen-4.0-ultra-generate-001":
+            config = ImagenUltraConfig(
+                key=f"cloud/{provider}/{model_id}",
+                name=name or "Imagen 4 Ultra",
+                description=description or "Google's premium image generation with SynthID watermark",
+                provider=provider,
+                cloud_model_id=model_id,
+            )
+        elif provider == CloudProviderType.OpenAI and model_id in ["dall-e-3", "dall-e-2"]:
+            config = OpenAIImageConfig(
+                key=f"cloud/{provider}/{model_id}",
+                name=name or f"DALL-E {model_id.split('-')[-1].upper()}",
+                description=description or "OpenAI's image generation model",
+                provider=provider,
+                cloud_model_id=model_id,
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported model: {provider}/{model_id}",
+            )
+
+        # Register with model manager
+        model_manager = ApiDependencies.invoker.services.model_manager.store
+
+        # Check if already registered
+        try:
+            existing = model_manager.get_model(config.key)
+            if existing:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Model {config.key} is already registered",
+                )
+        except Exception:
+            # Model doesn't exist, proceed with registration
+            pass
+
+        # Add to model manager
+        model_manager.add_model(config.key, config)
+
+        return {
+            "key": config.key,
+            "name": config.name,
+            "provider": str(provider),
+            "model_id": model_id,
+            "status": "registered",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to register cloud model: {str(e)}",
+        )
