@@ -86,6 +86,57 @@ The `path` field can be absolute or relative. If relative, it is taken
 to be relative to the `models_dir` setting in the user's
 `invokeai.yaml` file.
 
+### CloudModelConfigBase
+
+**Added: January 2025 (Phase 1)**
+
+Cloud-based models (e.g., Google Gemini, OpenAI DALL-E) that don't exist on disk use a separate config hierarchy rooted in `CloudModelConfigBase`. This base class provides fields similar to `ModelConfigBase` but **excludes file-related fields** since cloud models are accessed via API rather than loaded from disk.
+
+| **Field Name** | **Type**        |  **Description** |
+|----------------|-----------------|------------------|
+| `key`            | str           | Unique identifier for the model |
+| `name`           | str           | Name of the model (not unique) |
+| `description`    | str           | Human-readable description (optional) |
+| `source`         | str           | API endpoint or documentation URL |
+| `source_type`    | ModelSourceType | Should be `ModelSourceType.CLOUD` |
+
+**Key differences from `ModelConfigBase`:**
+- ❌ **No `hash` field** - Cloud models have no file hash
+- ❌ **No `path` field** - Cloud models don't exist on disk
+- ❌ **No `file_size` field** - Cloud models have no file size
+- ✅ **Parallel hierarchy** - Separate from local models, not a subclass
+
+**Cloud Provider Configs:**
+
+Each cloud provider has its own config class with a unique base type for proper discrimination:
+
+| **Config Class** | **Base Type** | **Discriminator Tag** | **Provider** |
+|------------------|---------------|----------------------|--------------|
+| `GeminiFlashImageConfig` | `BaseModelType.CloudGemini` | `main.cloud_rest.cloud-gemini` | Google Gemini 2.5 Flash |
+| `ImagenUltraConfig` | `BaseModelType.CloudImagen` | `main.cloud_rest.cloud-imagen` | Google Imagen 4 Ultra |
+| `OpenAIImageConfig` | `BaseModelType.CloudOpenAI` | `main.cloud_rest.cloud-openai` | OpenAI DALL-E 3/2 |
+
+All cloud configs are part of the `AnyModelConfig` discriminated union and can be validated/serialized using the same factory patterns as local models.
+
+**Example:**
+
+```python
+from invokeai.backend.model_manager.configs.cloud_models import GeminiFlashImageConfig
+from invokeai.backend.model_manager.taxonomy import ModelSourceType
+
+# No file fields needed!
+config = GeminiFlashImageConfig(
+    name="Gemini 2.5 Flash",
+    source="https://ai.google.dev/",
+    source_type=ModelSourceType.CLOUD,
+)
+
+# Config is part of discriminated union
+tag = config.get_tag()  # Tag(".").tag = "main.cloud_rest.cloud-gemini"
+```
+
+See `docs/features/CLOUD_MODELS.md` for detailed cloud model documentation.
+
 ### CheckpointConfig
 
 This adds support for checkpoint configurations, and adds the

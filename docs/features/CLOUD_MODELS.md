@@ -171,29 +171,55 @@ You should see:
 
 ### 5. Register Cloud Model
 
-You need to manually register cloud models in the InvokeAI database.
+**⚠️ Note**: Cloud model registration is currently being implemented. Phase 1 (architecture foundation) is complete. Phase 2 (service layer with registration API) is in progress.
 
-**Via Python Script**:
+**Current Status** (Phase 1 Complete - January 2025):
+- ✅ CloudModelConfigBase hierarchy implemented
+- ✅ Cloud provider configs (Gemini, Imagen, OpenAI) properly structured
+- ✅ No dummy file fields required (hash, path, file_size)
+- ✅ Discriminated union registration complete
+- ⏸️ Registration API (Phase 2) - In Progress
 
+**Architecture Overview**:
+
+Cloud models now use a separate config hierarchy (`CloudModelConfigBase`) that doesn't require file-related fields. Each provider has its own unique base type:
+
+- `GeminiFlashImageConfig` → `BaseModelType.CloudGemini` → Tag: `main.cloud_rest.cloud-gemini`
+- `ImagenUltraConfig` → `BaseModelType.CloudImagen` → Tag: `main.cloud_rest.cloud-imagen`
+- `OpenAIImageConfig` → `BaseModelType.CloudOpenAI` → Tag: `main.cloud_rest.cloud-openai`
+
+**Registration (Available After Phase 2)**:
+
+Once Phase 2 is complete, you'll be able to register cloud models via:
+
+**Via API** (Phase 2):
+```bash
+curl -X POST http://localhost:9090/api/v1/models/cloud \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Gemini 2.5 Flash Image",
+    "provider": "google-gemini",
+    "cloud_model_id": "gemini-2.5-flash-image",
+    "source": "https://ai.google.dev/"
+  }'
+```
+
+**Via Python Script** (Phase 2):
 ```python
 from invokeai.app.services.config import get_config
 from invokeai.app.services.model_records import ModelRecordServiceSQL
 from invokeai.backend.model_manager.configs.cloud_models import GeminiFlashImageConfig
-from invokeai.backend.model_manager.taxonomy import CloudProviderType
+from invokeai.backend.model_manager.taxonomy import ModelSourceType
 
 # Initialize services
 config = get_config()
 store = ModelRecordServiceSQL(db_path=config.db_path)
 
-# Create Gemini config
+# Create Gemini config (no file fields needed!)
 gemini_config = GeminiFlashImageConfig(
-    key="gemini-2.5-flash",
     name="Gemini 2.5 Flash Image",
-    description="Google's state-of-the-art image generation model",
     source="https://ai.google.dev/",
-    hash="cloud-model",  # Cloud models don't have file hashes
-    path="cloud://gemini-2.5-flash-image",  # Virtual path
-    file_size=0,  # Cloud models have no file size
+    source_type=ModelSourceType.CLOUD,
 )
 
 # Register in database
@@ -201,16 +227,7 @@ store.add_model(gemini_config)
 print(f"✓ Registered Gemini model with key: {gemini_config.key}")
 ```
 
-**Via API** (coming soon):
-```bash
-curl -X POST http://localhost:9090/api/v1/cloud_models \
-  -H "Content-Type: application/json" \
-  -d '{
-    "provider": "google-gemini",
-    "cloud_model_id": "gemini-2.5-flash-image",
-    "name": "Gemini 2.5 Flash Image"
-  }'
-```
+For the latest implementation status, see `CLOUD_MODELS_CURRENT_STATE_AND_FORWARD_PLAN.md`.
 
 ### 6. Use in Workflows
 
@@ -532,16 +549,20 @@ For comparison, running local models costs:
 
 ---
 
-## Roadmap
+## Implementation Roadmap
 
-### Phase 1: Google Gemini 2.5 Flash ✅ (Completed)
-- [x] Provider implementation
+### Provider Implementation (Original) ✅ COMPLETE
+All three cloud providers are fully implemented and working:
+
+**Google Gemini 2.5 Flash** ✅
+- [x] Provider implementation (100% API-accurate)
 - [x] Model configuration
 - [x] Model loader
 - [x] Text-to-image invocation
+- [x] Integration test script
 - [x] Documentation
 
-### Phase 2: Google Imagen 4 Ultra ✅ (Completed)
+**Google Imagen 4 Ultra** ✅
 - [x] Vertex AI authentication (OAuth2 + ADC)
 - [x] Provider implementation (100% API-accurate)
 - [x] Support for batch generation (1-4 images)
@@ -552,7 +573,7 @@ For comparison, running local models costs:
 - [x] Integration test script
 - [x] Documentation
 
-### Phase 3: OpenAI Integration ✅ (Completed)
+**OpenAI DALL-E** ✅
 - [x] OpenAI provider implementation (100% API-accurate)
 - [x] DALL-E 3 support (quality/style/revised prompts)
 - [x] DALL-E 2 support (batch generation up to 10 images)
@@ -562,19 +583,56 @@ For comparison, running local models costs:
 - [x] Integration test script
 - [x] Documentation
 
-### Phase 4: Frontend Integration 📋 (Planned)
+### Architecture Integration Phases (Current)
+
+**Phase 0: Rollback** ✅ COMPLETE (Oct 2024)
+- [x] Removed incorrect custom registration endpoint
+- [x] Reverted factory.py to clean state
+- [x] Created backup of initial attempt
+- [x] Established clean baseline
+
+**Phase 1: Architecture Foundation** ✅ COMPLETE (Jan 2025)
+- [x] Created CloudModelConfigBase hierarchy (parallel to Config_Base)
+- [x] Added cloud base types (CloudGemini, CloudImagen, CloudOpenAI)
+- [x] Refactored cloud configs to use new base (no file fields)
+- [x] Registered configs in discriminated union
+- [x] Comprehensive testing (29/29 structural tests passed)
+- [x] Documentation updates
+
+**Phase 2: Service Layer** 📋 IN PROGRESS
+- [ ] CloudModelService for registration and validation
+- [ ] RESTful API endpoints (POST, GET, DELETE /api/v1/models/cloud)
+- [ ] Integration with ModelRecordService
+- [ ] API key validation per provider
+- [ ] Service tests
+
+**Phase 3: Testing** 📋 PLANNED
+- [ ] Unit tests for service layer
+- [ ] Integration tests for API endpoints
+- [ ] E2E workflow tests
+- [ ] Load/stress testing
+
+**Phase 4: Frontend Integration** 📋 PLANNED
 - [ ] Cloud model registration UI
 - [ ] API key management panel
-- [ ] Cloud node in workflow editor
+- [ ] Model selector integration (unified local + cloud)
 - [ ] Cost estimation display
 - [ ] Provider status indicators
 
-### Phase 5: Advanced Features 💡 (Future)
+**Phase 5: Documentation & Polish** 📋 PLANNED
+- [ ] User documentation updates
+- [ ] Migration guide for users
+- [ ] Video tutorials
+- [ ] Cleanup and finalization
+
+**Future Enhancements** 💡
 - [ ] Response caching
 - [ ] Cost tracking and budgets
 - [ ] Rate limiting
-- [ ] Batch processing
+- [ ] Batch processing optimizations
 - [ ] Image-to-image (for supported models)
+
+**Current Progress:** 2/6 phases complete (33%)
 
 ---
 
