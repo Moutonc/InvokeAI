@@ -1,7 +1,39 @@
 # Cloud Models: Current State & Detailed Forward Plan
 
 **Date:** 2025-10-28
-**Status:** Planning phase - Implementation paused for proper architecture design
+**Status:** ✅ Phase 0 Complete - Clean baseline established
+**Last Updated:** 2025-10-28
+
+---
+
+## 🚀 Implementation Progress
+
+| Phase | Status | Duration | Commit | Notes |
+|-------|--------|----------|--------|-------|
+| **Phase 0: Rollback** | ✅ **COMPLETE** | 30 min | `367f26d` | Removed incorrect API router, reverted factory.py, created backup |
+| **Phase 1: Architecture** | ⏸️ Pending | Est. 2-3h | - | Awaiting approval to start |
+| **Phase 2: Service Layer** | ⏸️ Pending | Est. 3-4h | - | - |
+| **Phase 3: Testing** | ⏸️ Pending | Est. 4-5h | - | - |
+| **Phase 4: Frontend** | ⏸️ Pending | Est. 2-3h | - | - |
+| **Phase 5: Documentation** | ⏸️ Pending | Est. 1-2h | - | - |
+
+**Total Progress:** 1/6 phases complete (17%)
+
+### Phase 0 Completion Summary
+
+**What was removed:**
+- ❌ `invokeai/app/api/routers/cloud_models.py` - Custom registration endpoint
+- ❌ `invokeai/frontend/web/src/services/api/endpoints/cloudModels.ts` - Frontend client
+- ⏪ `invokeai/backend/model_manager/configs/factory.py` - Reverted cloud configs from union
+
+**What was kept:**
+- ✅ All cloud provider implementations (google_gemini_provider.py, etc.)
+- ✅ Cloud model loader (cloud_model_loader.py)
+- ✅ All invocations (gemini_text_to_image.py, etc.)
+- ✅ Frontend UI components
+- ✅ Model configs (will refactor in Phase 1)
+
+**Backup created:** `backup/cloud-models-attempt-1`
 
 ---
 
