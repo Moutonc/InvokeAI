@@ -19,7 +19,7 @@ import { useAppDispatch, useAppSelector } from 'app/store/storeHooks';
 import { InformationalPopover } from 'common/components/InformationalPopover/InformationalPopover';
 import ScrollableContent from 'common/components/OverlayScrollbars/ScrollableContent';
 import { buildUseBoolean } from 'common/hooks/useBoolean';
-import { CloudProviderSettingsPanel } from 'features/cloudIntegration/components';
+import { CloudModelRegistrationPanel, CloudProviderSettingsPanel } from 'features/cloudIntegration/components';
 import { selectShouldUseCPUNoise, shouldUseCpuNoiseChanged } from 'features/controlLayers/store/paramsSlice';
 import { useRefreshAfterResetModal } from 'features/system/components/SettingsModal/RefreshAfterResetModal';
 import { SettingsDeveloperLogIsEnabled } from 'features/system/components/SettingsModal/SettingsDeveloperLogIsEnabled';
@@ -258,6 +258,8 @@ const SettingsModal = (props: { children: ReactElement }) => {
                   </StickyScrollable>
 
                   <CloudProviderSettingsPanel />
+
+                  <CloudModelRegistrationPanel />
 
                   <StickyScrollable title={t('settings.clearIntermediates')}>
                     <Button
