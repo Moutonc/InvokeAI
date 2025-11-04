@@ -1,7 +1,7 @@
 # Cloud Models: Current State & Detailed Forward Plan
 
 **Date:** 2025-10-28
-**Status:** ✅ Phase 1 Complete - Architecture foundation implemented
+**Status:** ✅ Phase 2 Complete - Service layer and API endpoints implemented
 **Last Updated:** 2025-11-04
 
 ---
@@ -12,12 +12,12 @@
 |-------|--------|----------|--------|-------|
 | **Phase 0: Rollback** | ✅ **COMPLETE** | 30 min | `367f26d` | Removed incorrect API router, reverted factory.py, created backup |
 | **Phase 1: Architecture** | ✅ **COMPLETE** | 2h | `48d87d7` | CloudModelConfigBase hierarchy, unique base types, factory union |
-| **Phase 2: Service Layer** | ⏸️ Pending | Est. 3-4h | - | - |
+| **Phase 2: Service Layer** | ✅ **COMPLETE** | 3h | `4c83f92` | CloudModelService, RESTful API, comprehensive tests |
 | **Phase 3: Testing** | ⏸️ Pending | Est. 4-5h | - | - |
 | **Phase 4: Frontend** | ⏸️ Pending | Est. 2-3h | - | - |
 | **Phase 5: Documentation** | ⏸️ Pending | Est. 1-2h | - | - |
 
-**Total Progress:** 2/6 phases complete (33%)
+**Total Progress:** 3/6 phases complete (50%)
 
 ### Phase 0 Completion Summary
 
@@ -62,6 +62,45 @@
 - ✅ Manual discriminator tag verification passed
 - ✅ No file fields (hash, path, file_size) required
 - ✅ Unique tags for each cloud provider
+
+### Phase 2 Completion Summary
+
+**What was implemented:**
+- ✅ `invokeai/app/services/cloud_models/` - Service layer package
+  - `cloud_model_service_base.py` - Abstract interface and exceptions
+  - `cloud_model_service.py` - Service implementation
+  - `__init__.py` - Public API exports
+- ✅ `invokeai/app/api/routers/cloud_models.py` - RESTful API router
+- ✅ `tests/app/services/test_cloud_model_service.py` - Comprehensive unit tests
+
+**Service Features:**
+- Cloud model registration with provider validation
+- API key validation (GOOGLE_API_KEY, GOOGLE_CLOUD_PROJECT, OPENAI_API_KEY)
+- Duplicate detection
+- Model retrieval (get by key, list all, filter by provider)
+- Model deletion
+- Integration with ModelRecordService
+
+**API Endpoints:**
+- `POST /api/v1/models/cloud` - Register cloud model (HTTP 201)
+- `GET /api/v1/models/cloud` - List models (with provider filter)
+- `GET /api/v1/models/cloud/{key}` - Get model by key
+- `DELETE /api/v1/models/cloud/{key}` - Delete model
+- `GET /api/v1/models/cloud/validate/{provider}` - Validate API key
+
+**Testing:**
+- 20+ unit tests covering all service methods
+- Mock-based isolation testing
+- Error case coverage
+- All tests use pytest conventions
+
+**Architecture Benefits:**
+- Clean separation: service layer + API layer
+- No new database tables (uses ModelRecordService)
+- Type-safe with Pydantic
+- RESTful design
+- Follows InvokeAI patterns
+- Already registered in api_app.py
 
 ---
 
