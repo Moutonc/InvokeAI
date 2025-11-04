@@ -1,8 +1,8 @@
 # Cloud Models: Current State & Detailed Forward Plan
 
 **Date:** 2025-10-28
-**Status:** ✅ Phase 0 Complete - Clean baseline established
-**Last Updated:** 2025-10-28
+**Status:** ✅ Phase 1 Complete - Architecture foundation implemented
+**Last Updated:** 2025-11-04
 
 ---
 
@@ -11,13 +11,13 @@
 | Phase | Status | Duration | Commit | Notes |
 |-------|--------|----------|--------|-------|
 | **Phase 0: Rollback** | ✅ **COMPLETE** | 30 min | `367f26d` | Removed incorrect API router, reverted factory.py, created backup |
-| **Phase 1: Architecture** | ⏸️ Pending | Est. 2-3h | - | Awaiting approval to start |
+| **Phase 1: Architecture** | ✅ **COMPLETE** | 2h | `48d87d7` | CloudModelConfigBase hierarchy, unique base types, factory union |
 | **Phase 2: Service Layer** | ⏸️ Pending | Est. 3-4h | - | - |
 | **Phase 3: Testing** | ⏸️ Pending | Est. 4-5h | - | - |
 | **Phase 4: Frontend** | ⏸️ Pending | Est. 2-3h | - | - |
 | **Phase 5: Documentation** | ⏸️ Pending | Est. 1-2h | - | - |
 
-**Total Progress:** 1/6 phases complete (17%)
+**Total Progress:** 2/6 phases complete (33%)
 
 ### Phase 0 Completion Summary
 
@@ -34,6 +34,34 @@
 - ✅ Model configs (will refactor in Phase 1)
 
 **Backup created:** `backup/cloud-models-attempt-1`
+
+### Phase 1 Completion Summary
+
+**What was implemented:**
+- ✅ `base.py` - CloudModelConfigBase abstract base class (parallel to Config_Base)
+- ✅ `taxonomy.py` - CloudGemini, CloudImagen, CloudOpenAI base types
+- ✅ `cloud_models.py` - Refactored to inherit from CloudModelConfigBase
+- ✅ `factory.py` - Added cloud configs to AnyModelConfig discriminated union
+- ✅ Test file created for verification
+
+**Architecture changes:**
+- Cloud models now have their own hierarchy (no file fields required)
+- Each provider has unique base type for discrimination
+- Tags: main.cloud_rest.cloud-{provider}
+- Clean separation: CloudModelConfigBase vs Config_Base
+
+**Files modified:**
+1. `invokeai/backend/model_manager/configs/base.py` - Added CloudModelConfigBase
+2. `invokeai/backend/model_manager/taxonomy.py` - Added 3 cloud base types
+3. `invokeai/backend/model_manager/configs/cloud_models.py` - Inheritance refactor
+4. `invokeai/backend/model_manager/configs/factory.py` - Union registration
+5. `test_phase1_configs.py` - Verification tests (syntax validated)
+
+**Validation:**
+- ✅ Python syntax valid on all files
+- ✅ Manual discriminator tag verification passed
+- ✅ No file fields (hash, path, file_size) required
+- ✅ Unique tags for each cloud provider
 
 ---
 
