@@ -28,6 +28,97 @@ if TYPE_CHECKING:
     pass
 
 
+class CloudModelConfigBase(ABC, BaseModel):
+    """
+    Abstract base class for cloud model configurations.
+
+    Cloud models don't exist on disk, so they don't have file-related fields
+    (hash, path, file_size). They use API endpoints instead.
+
+    This is a parallel hierarchy to Config_Base for models that exist purely
+    as API endpoints rather than downloaded files.
+    """
+
+    # Identity and metadata (shared with Config_Base)
+    key: str = Field(
+        default_factory=uuid_string,
+        description="A unique key for this model.",
+    )
+    name: str = Field(
+        description="Name of the model.",
+    )
+    description: str | None = Field(
+        default=None,
+        description="Model description",
+    )
+    source: str = Field(
+        description="The API endpoint or documentation URL for this cloud model.",
+    )
+    source_type: ModelSourceType = Field(
+        description="The type of source (should be CLOUD for cloud models)",
+    )
+    source_api_response: str | None = Field(
+        default=None,
+        description="The original API response from the source, as stringified JSON.",
+    )
+    cover_image: str | None = Field(
+        default=None,
+        description="Url for image to preview model",
+    )
+
+    # Cloud models are registered, not probed from disk
+    CONFIG_CLASSES: ClassVar[set[Type["CloudModelConfigBase"]]] = set()
+    """Set of all non-abstract subclasses of CloudModelConfigBase."""
+
+    model_config = ConfigDict(
+        validate_assignment=True,
+        json_schema_serialization_defaults_required=True,
+        json_schema_mode_override="serialization",
+    )
+
+    @classmethod
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not isabstract(cls) and ABC not in cls.__bases__:
+            cls.CONFIG_CLASSES.add(cls)
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs):
+        # Ensure cloud model configs define 'base', 'type' and 'format' fields
+        for name in ("type", "base", "format"):
+            if name not in cls.model_fields:
+                raise NotImplementedError(f"{cls.__name__} must define a '{name}' field")
+            if cls.model_fields[name].default is PydanticUndefined:
+                raise NotImplementedError(f"{cls.__name__} must define a default for the '{name}' field")
+
+    @classmethod
+    def get_tag(cls) -> Tag:
+        """Constructs a pydantic discriminated union tag for this model config class."""
+        tag_strings: list[str] = []
+        for name in ("type", "format", "base", "variant"):
+            if field := cls.model_fields.get(name):
+                if field.default is not PydanticUndefined:
+                    tag_strings.append(field.default.value)
+        return Tag(".".join(tag_strings))
+
+    @staticmethod
+    def get_model_discriminator_value(v: Any) -> str:
+        """Computes the discriminator value for a model config discriminated union."""
+        if isinstance(v, (CloudModelConfigBase, Config_Base)):
+            # For instances, use their tag
+            return str(v.__class__.get_tag())
+        elif isinstance(v, dict):
+            # For dicts during deserialization, compute tag from fields
+            parts = []
+            for key in ("type", "format", "base", "variant"):
+                if key in v:
+                    val = v[key]
+                    parts.append(val if isinstance(val, str) else val.value if hasattr(val, "value") else str(val))
+            return ".".join(parts)
+        else:
+            raise ValueError(f"Unable to get discriminator value from {type(v)}")
+
+
 class Config_Base(ABC, BaseModel):
     """
     Abstract base class for model configurations. A model config describes a specific combination of model base, type and
@@ -137,12 +228,12 @@ class Config_Base(ABC, BaseModel):
     def get_model_discriminator_value(v: Any) -> str:
         """Computes the discriminator value for a model config discriminated union."""
         # This is called by pydantic during deserialization and serialization to determine which model the data
-        # represents. It can get either a dict (during deserialization) or an instance of a Config_Base subclass
+        # represents. It can get either a dict (during deserialization) or an instance of a Config_Base/CloudModelConfigBase subclass
         # (during serialization).
         #
         # See: https://docs.pydantic.dev/latest/concepts/unions/#discriminated-unions-with-callable-discriminator
-        if isinstance(v, Config_Base):
-            # We have an instance of a ModelConfigBase subclass - use its tag directly.
+        if isinstance(v, (Config_Base, CloudModelConfigBase)):
+            # We have an instance of a config subclass - use its tag directly.
             return v.get_tag().tag
         if isinstance(v, dict):
             # We have a dict - attempt to compute a tag from its fields.

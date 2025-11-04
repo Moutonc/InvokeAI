@@ -50,6 +50,12 @@ class BaseModelType(str, Enum):
     """Indicates the model is associated with CogView 4 model architecture."""
     CloudAPI = "cloud-api"
     """Indicates the model is a cloud-based API service (e.g., Google Gemini, OpenAI DALL-E)."""
+    CloudGemini = "cloud-gemini"
+    """Indicates the model is Google Gemini 2.5 Flash Image cloud service."""
+    CloudImagen = "cloud-imagen"
+    """Indicates the model is Google Imagen 4 Ultra cloud service."""
+    CloudOpenAI = "cloud-openai"
+    """Indicates the model is OpenAI DALL-E cloud service."""
     Unknown = "unknown"
     """Indicates the model's base architecture is unknown."""
 

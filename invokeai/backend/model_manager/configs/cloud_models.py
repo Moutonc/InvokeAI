@@ -4,8 +4,7 @@ from typing import Any, Dict, List, Literal
 
 from pydantic import Field
 
-from invokeai.backend.model_manager.configs.base import Config_Base
-from invokeai.backend.model_manager.model_on_disk import ModelOnDisk
+from invokeai.backend.model_manager.configs.base import CloudModelConfigBase
 from invokeai.backend.model_manager.taxonomy import (
     BaseModelType,
     CloudProviderType,
@@ -14,15 +13,16 @@ from invokeai.backend.model_manager.taxonomy import (
 )
 
 
-class NotACloudModelError(Exception):
-    """Raised when attempting to create a cloud model config from a non-cloud source."""
+class CloudModelConfig(CloudModelConfigBase):
+    """Base configuration for cloud-based image generation models.
 
+    Cloud models are registered manually via API, not auto-discovered from disk.
 
-class CloudModelConfig(Config_Base):
-    """Base configuration for cloud-based image generation models."""
+    Note: Subclasses should define specific base types (CloudGemini, CloudImagen, CloudOpenAI)
+    rather than using the generic CloudAPI base type.
+    """
 
     type: Literal[ModelType.Main] = ModelType.Main
-    base: Literal[BaseModelType.CloudAPI] = BaseModelType.CloudAPI
     format: Literal[ModelFormat.CloudREST] = ModelFormat.CloudREST
 
     # Cloud-specific fields
@@ -35,21 +35,6 @@ class CloudModelConfig(Config_Base):
         description="Provider-specific configuration parameters",
     )
 
-    @classmethod
-    def from_model_on_disk(
-        cls,
-        mod: ModelOnDisk,
-        override_fields: dict[str, Any],
-    ) -> "CloudModelConfig":
-        """
-        Cloud models are not discovered from disk. They must be registered manually.
-
-        Raises NotACloudModelError to indicate this is not a cloud model source.
-        """
-        raise NotACloudModelError(
-            "Cloud models cannot be auto-discovered from disk. Please register them manually via API or UI."
-        )
-
 
 class GeminiFlashImageConfig(CloudModelConfig):
     """Google Gemini 2.5 Flash Image configuration.
@@ -60,9 +45,9 @@ class GeminiFlashImageConfig(CloudModelConfig):
     Pricing: $0.039 per image (1290 output tokens)
     """
 
+    base: Literal[BaseModelType.CloudGemini] = BaseModelType.CloudGemini
     provider: Literal[CloudProviderType.GoogleGemini] = CloudProviderType.GoogleGemini
     cloud_model_id: Literal["gemini-2.5-flash-image"] = "gemini-2.5-flash-image"
-    variant: Literal["google-gemini"] = "google-gemini"
 
     # Supported aspect ratios per official spec
     supported_aspect_ratios: List[str] = Field(
@@ -104,9 +89,9 @@ class ImagenUltraConfig(CloudModelConfig):
     Pricing: $0.06 per image
     """
 
+    base: Literal[BaseModelType.CloudImagen] = BaseModelType.CloudImagen
     provider: Literal[CloudProviderType.GoogleImagen] = CloudProviderType.GoogleImagen
     cloud_model_id: Literal["imagen-4.0-ultra-generate-001"] = "imagen-4.0-ultra-generate-001"
-    variant: Literal["google-imagen"] = "google-imagen"
 
     # Supported aspect ratios (Imagen-specific)
     supported_aspect_ratios: List[str] = Field(
@@ -154,8 +139,8 @@ class OpenAIImageConfig(CloudModelConfig):
     Pricing: DALL-E 3 - $0.04-$0.12 per image depending on quality and size
     """
 
+    base: Literal[BaseModelType.CloudOpenAI] = BaseModelType.CloudOpenAI
     provider: Literal[CloudProviderType.OpenAI] = CloudProviderType.OpenAI
-    variant: Literal["openai"] = "openai"
 
     # Model ID can be dall-e-3, dall-e-2, or gpt-image-1 (when available)
     cloud_model_id: str = Field(
