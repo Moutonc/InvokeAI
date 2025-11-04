@@ -1,5 +1,5 @@
 import type { SystemStyleObject } from '@invoke-ai/ui-library';
-import { Flex, Spacer, Text } from '@invoke-ai/ui-library';
+import { Badge, Flex, Spacer, Text, Tooltip } from '@invoke-ai/ui-library';
 import { createSelector } from '@reduxjs/toolkit';
 import { useAppDispatch, useAppSelector } from 'app/store/storeHooks';
 import { selectModelManagerV2Slice, setSelectedModelKey } from 'features/modelManagerV2/store/modelManagerV2Slice';
@@ -67,6 +67,17 @@ const ModelListItem = ({ model }: ModelListItemProps) => {
     dispatch(setSelectedModelKey(model.key));
   }, [model.key, dispatch]);
 
+  // Check if this is a cloud model
+  const isCloudModel = model.source_type === 'cloud';
+
+  // Get file size display (cloud models don't have file_size)
+  const fileSizeDisplay = useMemo(() => {
+    if (isCloudModel) {
+      return 'Cloud';
+    }
+    return 'file_size' in model && model.file_size ? filesize(model.file_size) : '-';
+  }, [isCloudModel, model]);
+
   return (
     <Flex
       sx={sx}
@@ -85,8 +96,15 @@ const ModelListItem = ({ model }: ModelListItemProps) => {
             <Text fontWeight="semibold" noOfLines={1} wordBreak="break-all">
               {model.name}
             </Text>
+            {isCloudModel && (
+              <Tooltip label="Cloud Model">
+                <Badge colorScheme="cyan" fontSize="xs">
+                  ☁️
+                </Badge>
+              </Tooltip>
+            )}
             <Text variant="subtext" fontStyle="italic">
-              {filesize(model.file_size)}
+              {fileSizeDisplay}
             </Text>
             <Spacer />
           </Flex>
@@ -96,6 +114,11 @@ const ModelListItem = ({ model }: ModelListItemProps) => {
           <Flex gap={1} mt={1}>
             <ModelBaseBadge base={model.base} />
             <ModelFormatBadge format={model.format} />
+            {isCloudModel && 'provider' in model && (
+              <Badge colorScheme="purple" fontSize="xs">
+                {model.provider}
+              </Badge>
+            )}
           </Flex>
         </Flex>
       </Flex>
