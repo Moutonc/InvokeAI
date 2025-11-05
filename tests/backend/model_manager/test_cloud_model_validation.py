@@ -301,6 +301,7 @@ class TestPhase2ServiceLayerValidation:
     ):
         """Test that get_model validates it's a cloud model."""
         from invokeai.backend.model_manager.configs.main import Main_Diffusers_SD1_Config
+        from invokeai.backend.model_manager.config import ModelVariantType, SchedulerPredictionType, ModelSourceType
 
         # Mock returning a non-cloud model
         sd_config = Main_Diffusers_SD1_Config(
@@ -308,6 +309,11 @@ class TestPhase2ServiceLayerValidation:
             path="/path/to/model",
             source="test",
             base=BaseModelType.StableDiffusion1,
+            hash="fake-hash-123",
+            file_size=1000000,
+            source_type=ModelSourceType.PATH,
+            prediction_type=SchedulerPredictionType.Epsilon,
+            variant=ModelVariantType.Normal,
         )
 
         mock_model_record_service.get_model.return_value = sd_config
@@ -320,6 +326,7 @@ class TestPhase2ServiceLayerValidation:
     ):
         """Test that delete_model validates it's a cloud model."""
         from invokeai.backend.model_manager.configs.main import Main_Diffusers_SD1_Config
+        from invokeai.backend.model_manager.config import ModelVariantType, SchedulerPredictionType, ModelSourceType
 
         # Mock returning a non-cloud model
         sd_config = Main_Diffusers_SD1_Config(
@@ -327,6 +334,11 @@ class TestPhase2ServiceLayerValidation:
             path="/path/to/model",
             source="test",
             base=BaseModelType.StableDiffusion1,
+            hash="fake-hash-123",
+            file_size=1000000,
+            source_type=ModelSourceType.PATH,
+            prediction_type=SchedulerPredictionType.Epsilon,
+            variant=ModelVariantType.Normal,
         )
 
         mock_model_record_service.get_model.return_value = sd_config
