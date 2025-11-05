@@ -23,6 +23,7 @@ class CloudModelConfig(CloudModelConfigBase):
     """
 
     type: Literal[ModelType.Main] = ModelType.Main
+    base: Literal[BaseModelType.CloudAPI] = BaseModelType.CloudAPI
     format: Literal[ModelFormat.CloudREST] = ModelFormat.CloudREST
 
     # Cloud-specific fields
