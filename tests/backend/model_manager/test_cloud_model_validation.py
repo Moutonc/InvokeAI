@@ -311,7 +311,7 @@ class TestPhase2ServiceLayerValidation:
             base=BaseModelType.StableDiffusion1,
             hash="fake-hash-123",
             file_size=1000000,
-            source_type=ModelSourceType.PATH,
+            source_type=ModelSourceType.Path,
             prediction_type=SchedulerPredictionType.Epsilon,
             variant=ModelVariantType.Normal,
         )
@@ -336,7 +336,7 @@ class TestPhase2ServiceLayerValidation:
             base=BaseModelType.StableDiffusion1,
             hash="fake-hash-123",
             file_size=1000000,
-            source_type=ModelSourceType.PATH,
+            source_type=ModelSourceType.Path,
             prediction_type=SchedulerPredictionType.Epsilon,
             variant=ModelVariantType.Normal,
         )
