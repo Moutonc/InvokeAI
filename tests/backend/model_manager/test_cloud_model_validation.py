@@ -301,7 +301,7 @@ class TestPhase2ServiceLayerValidation:
     ):
         """Test that get_model validates it's a cloud model."""
         from invokeai.backend.model_manager.configs.main import Main_Diffusers_SD1_Config
-        from invokeai.backend.model_manager.config import ModelVariantType, SchedulerPredictionType, ModelSourceType
+        from invokeai.backend.model_manager.taxonomy import ModelVariantType, SchedulerPredictionType, ModelSourceType
 
         # Mock returning a non-cloud model
         sd_config = Main_Diffusers_SD1_Config(
@@ -326,7 +326,7 @@ class TestPhase2ServiceLayerValidation:
     ):
         """Test that delete_model validates it's a cloud model."""
         from invokeai.backend.model_manager.configs.main import Main_Diffusers_SD1_Config
-        from invokeai.backend.model_manager.config import ModelVariantType, SchedulerPredictionType, ModelSourceType
+        from invokeai.backend.model_manager.taxonomy import ModelVariantType, SchedulerPredictionType, ModelSourceType
 
         # Mock returning a non-cloud model
         sd_config = Main_Diffusers_SD1_Config(
